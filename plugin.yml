@@ -1,0 +1,4 @@
+name: DynamicBan
+version: 1.3.0
+main: com.xdrapor.dynamicban.DynamicBan
+authors: [xDrapor, djaddi]
