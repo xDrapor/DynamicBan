@@ -1,8 +1,10 @@
 package com.xdrapor.dynamicban.core;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 /**
  * This class handles interactions with the MySQL database.
@@ -87,7 +89,7 @@ public class DDatabase extends DCore
 				//Creates the violations table.
 				statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + prefix + "_violations" + " (username VARCHAR(32) NOT NULL, bantime BIGINT NOT NULL, ipaddress VARCHAR(32) NOT NULL, banishedtime BIGINT NOT NULL, ipbantime BIGINT NOT NULL, rangetime BIGINT NOT NULL, rangelevel TINYINT(1) NOT NULL, warns INT NOT NULL, kicks INT NOT NULL, PRIMARY KEY (username));");
 				//Creates the playerdata table
-				statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + prefix + "_playerdata" + " (username VARCHAR(32) NOT NULL, ipaddress VARCHAR(32) NOT NULL, initialipaddress VARCHAR(32), PRIMARY KEY (username));");
+				statement.executeUpdate("CREATE TABLE IF NOT EXISTS " + prefix + "_playerdata" + " (username VARCHAR(32) NOT NULL, ipaddress VARCHAR(32) NOT NULL, initialipaddress VARCHAR(32), lastjoin VARCHAR(32), lockedip TINYINT(1), immune TINYINT(1), PRIMARY KEY (username));");
 			}
 		} 
 		catch (Exception e) 
@@ -107,12 +109,12 @@ public class DDatabase extends DCore
 	 * Saves player data to the MySQL database.
 	 * @param event
 	 */
-	public void savePlayerData(PlayerLoginEvent event)
+	public void savePlayerData(PlayerJoinEvent event)
 	{
 		try 
 		{
 			//Insert the player's data into the playerdata table.
-			statement.executeUpdate("INSERT INTO " + prefix + "_playerdata (username, ipaddress, initialipaddress) VALUES ('"+ event.getPlayer().getName() + "','" + event.getPlayer().getAddress().getAddress().getHostAddress() +"','"+ event.getPlayer().getAddress().getAddress().getHostAddress() +"') ON DUPLICATE KEY UPDATE ipaddress='" +  event.getPlayer().getAddress().getAddress().getHostAddress() + "';");
+			statement.executeUpdate("INSERT INTO " + prefix + "_playerdata (username, ipaddress, initialipaddress, lastjoin, lockedip, immune) VALUES ('"+ event.getPlayer().getName() + "','" + event.getPlayer().getAddress().getAddress().getHostAddress() +"','"+ event.getPlayer().getAddress().getAddress().getHostAddress() +"', '" + new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(new Date())+ "', 0,0) ON DUPLICATE KEY UPDATE ipaddress='" +  event.getPlayer().getAddress().getAddress().getHostAddress() + "', lastjoin='" + new SimpleDateFormat("yyyy-MM-dd:HH-mm-ss").format(new Date()) + "';");
 			//Insert the player's data into the violations table.
 			statement.executeUpdate("INSERT INTO " + prefix + "_violations (username, ipaddress, bantime, banishedtime, ipbantime, rangetime, rangelevel, warns, kicks) VALUES ('"+ event.getPlayer().getName() + "', '" + event.getPlayer().getAddress().getAddress().getHostAddress() + "', 0, 0, 0, 0, 0, 0, 0) ON DUPLICATE KEY UPDATE username='" +  event.getPlayer().getName() + "';");
 		} 
@@ -129,6 +131,11 @@ public class DDatabase extends DCore
 		}
 	}
 
+	/**
+	 * Checks to see if a user is banned.
+	 * @param name
+	 * @return String
+	 */
 	public boolean isBanned(String name)
 	{
 		//Define a new integer to hold the time of the ban.
@@ -161,6 +168,11 @@ public class DDatabase extends DCore
 		return timeHolder == -1 ? true : false;
 	}
 	
+	/** 
+	 * Checks to see if a user is temporarily banned.
+	 * @param name
+	 * @return String
+	 */
 	public boolean isTempbanned(String name)
 	{
 		//Define a new integer to hold the time of the ban.
@@ -177,6 +189,108 @@ public class DDatabase extends DCore
 			result.first();
 			//Set the timeHolder to the long value of the result.
 			timeHolder = result.getLong("bantime");
+		}
+		catch (Exception e)
+		{
+			//Print what error occurred.
+			dynamicBan.getLog().mysql_severe("Query failed.");
+			//Print that we will be reverting to flatfile.
+			dynamicBan.getLog().mysql_severe("Reverting to flatfile...");
+			//Incase they need to report the issue.
+			dynamicBan.getLog().mysql_severe("If reporting this as a bug, please provide this error: " + e.getMessage());
+			//Switch to flatfile.
+			storageHandler.setUsingDatabase(false);
+		}
+		//Return the boolean result, if the time is -1, the user is permanently banned.
+		return timeHolder > 0 ? true : false;
+	}
+	
+	/** 
+	 * Checks to see if a user is ipbanned.
+	 * @param name
+	 * @return String
+	 */
+	public boolean isIPbanned(String address)
+	{
+		//Define a new integer to hold the time of the ban.
+		long timeHolder = 0;
+		//Define a new ResultSet to hold the results of the MySQL query.
+		ResultSet result;
+		//Define a new String to hold the name of the matched address
+		String name = "";
+		try
+		{
+			//Execute the query
+			statement.executeQuery("SELECT username FROM " + prefix + "_violations WHERE ipaddress='" + address + "';");
+			//Set the name to the result
+			result = statement.getResultSet();
+			//Move the "cursor" to the first row of the ResultSet index.
+			result.first();
+			//Only if a match in address were found
+			if(result.getFetchSize() > 0)
+			{
+				//Set the name string to the result
+				name = result.getString("username");
+				//Execute the query
+				statement.executeQuery("SELECT ipbantime FROM " + prefix + "_violations WHERE username='" + name + "';");
+				//Get the result
+				result = statement.getResultSet();
+				//Move the "cursor" to the first row of the ResultSet index.
+				result.first();
+				//Set the timeHolder to the long value of the result.
+				timeHolder = result.getLong("ipbantime");
+			}
+		}
+		catch (Exception e)
+		{
+			//Print what error occurred.
+			dynamicBan.getLog().mysql_severe("Query failed.");
+			//Print that we will be reverting to flatfile.
+			dynamicBan.getLog().mysql_severe("Reverting to flatfile...");
+			//Incase they need to report the issue.
+			dynamicBan.getLog().mysql_severe("If reporting this as a bug, please provide this error: " + e.getMessage());
+			//Switch to flatfile.
+			storageHandler.setUsingDatabase(false);
+		}
+		//Return the boolean result, if the time is -1, the user is permanently banned.
+		return timeHolder == -1 ? true : false;
+	}
+	
+	/** 
+	 * Checks to see if a user is temporarily ipbanned.
+	 * @param name
+	 * @return String
+	 */
+	public boolean isTempIPbanned(String address)
+	{
+		//Define a new integer to hold the time of the ban.
+		long timeHolder = 0;
+		//Define a new ResultSet to hold the results of the MySQL query.
+		ResultSet result;
+		//Define a new String to hold the name of the matched address
+		String name = "";
+		try
+		{
+			//Execute the query
+			statement.executeQuery("SELECT username FROM " + prefix + "_violations WHERE ipaddress='" + address + "';");
+			//Set the name to the result
+			result = statement.getResultSet();
+			//Move the "cursor" to the first row of the ResultSet index.
+			result.first();
+			//Only if a match in address were found
+			if(result.getFetchSize() > 0)
+			{
+				//Set the name string to the result
+				name = result.getString("username");
+				//Execute the query
+				statement.executeQuery("SELECT ipbantime FROM " + prefix + "_violations WHERE username='" + name + "';");
+				//Get the result
+				result = statement.getResultSet();
+				//Move the "cursor" to the first row of the ResultSet index.
+				result.first();
+				//Set the timeHolder to the long value of the result.
+				timeHolder = result.getLong("ipbantime");
+			}
 		}
 		catch (Exception e)
 		{

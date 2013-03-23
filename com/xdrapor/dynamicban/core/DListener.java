@@ -1,11 +1,10 @@
-package com.xdrapor.dynamicban.listeners;
+package com.xdrapor.dynamicban.core;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
-import com.xdrapor.dynamicban.core.DCore;
 
 /**
  * A Master listener for the plugin.
@@ -14,7 +13,7 @@ import com.xdrapor.dynamicban.core.DCore;
 public class DListener extends DCore implements Listener
 {
 	@EventHandler (priority = EventPriority.MONITOR)
-	public void storePlayerData(PlayerLoginEvent e)
+	public void storePlayerData(PlayerJoinEvent e)
 	{
 		//Calls the DStorage.savePlayerData() method.
 		//Saves player data to the MySQL database or FlatFile depending on the user's preference.

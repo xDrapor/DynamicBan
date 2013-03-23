@@ -1,6 +1,6 @@
 package com.xdrapor.dynamicban.core;
 
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import static com.xdrapor.dynamicban.DynamicBan.instance;
 
 
@@ -11,7 +11,7 @@ import static com.xdrapor.dynamicban.DynamicBan.instance;
 public class DStorage 
 {
 	/** Variable to store whether we are using the database at init or not **/
-	private boolean usingDatabase;
+	private static boolean usingDatabase;
 
 	/** Define a DDatabase object **/
 	private static DDatabase database; 
@@ -54,7 +54,7 @@ public class DStorage
 	 * Saves player data to the configured storage method.
 	 * @param e
 	 */
-	public void savePlayerData(PlayerLoginEvent e)
+	public void savePlayerData(PlayerJoinEvent e)
 	{
 		//If using the database.
 		if(usingDatabase)
@@ -80,7 +80,7 @@ public class DStorage
 		if(usingDatabase)
 		{
 			//Return the result of a MySQL query.
-			return database.isBanned(username);
+			return database.isBanned(username) || flatFile.isBanned(username);
 		}
 		else
 		{

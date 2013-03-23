@@ -1,7 +1,7 @@
 package com.xdrapor.dynamicban;
 
+import com.xdrapor.dynamicban.core.DListener;
 import com.xdrapor.dynamicban.core.DPlugin;
-import com.xdrapor.dynamicban.listeners.DListener;
 
 /**
  * Main class handled to be called by Bukkit.
