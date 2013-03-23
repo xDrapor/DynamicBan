@@ -38,6 +38,19 @@ public class DStorage
 	}
 
 	/**
+	 * Closes streams and connections.
+	 */
+	public void close()
+	{
+		//If we are using the database
+		if(usingDatabase)
+		{
+			//Close all connections.
+			database.closeConnections();
+		}
+	}
+	
+	/**
 	 * Saves player data to the configured storage method.
 	 * @param e
 	 */

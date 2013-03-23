@@ -190,4 +190,20 @@ public class DDatabase extends DCore
 		//Return the boolean result, if the time is -1, the user is permanently banned.
 		return timeHolder > 0 ? true : false;
 	}
+	
+	public void closeConnections()
+	{
+		try
+		{
+			connection.close();
+			statement.close();
+		} 
+		catch (Exception e)
+		{
+			//Print what error occurred.
+			dynamicBan.getLog().mysql_severe("Error when closing connections!");
+			//Incase they need to report the issue.
+			dynamicBan.getLog().mysql_severe("If reporting this as a bug, please provide this error: " + e.getMessage());
+		}
+	}
 }

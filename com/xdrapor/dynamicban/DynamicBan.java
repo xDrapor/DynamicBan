@@ -40,6 +40,8 @@ public class DynamicBan extends DPlugin
 	 */
 	public void onDisable()
 	{
+		//Closes streams/connections.
+		getStorage().close();
 		//Explicitly call the onDisable method from DPlugin
 		super.onDisable();
 	}
