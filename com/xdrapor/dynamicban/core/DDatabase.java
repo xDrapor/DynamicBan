@@ -55,6 +55,8 @@ public class DDatabase extends DCore
 		{
 			//Attempt to open a connection with the SQL database
 			connection = DriverManager.getConnection("jdbc:mysql://" + address + ":" + port + "/" + database, username, password);
+			//Log the successful connection.
+			dynamicBan.getLog().mysql_info("Successfully connected to database " + database + " at " + address + "!");
 		}
 		catch (Exception e) 
 		{
@@ -191,11 +193,16 @@ public class DDatabase extends DCore
 		return timeHolder > 0 ? true : false;
 	}
 	
+	/**
+	 * Close all connections created.
+	 */
 	public void closeConnections()
 	{
 		try
 		{
+			//Close the connection.
 			connection.close();
+			//Close the statement.
 			statement.close();
 		} 
 		catch (Exception e)

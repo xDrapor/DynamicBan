@@ -79,4 +79,15 @@ public class DLogger
 		//Uses the previously defined Logger instance to log on the SEVERE level.
 		log.severe(prefix + mysql + msg);
 	}
+	
+	/**
+	 * Logs a message on the INFO level.
+	 * Use for any general information, such as startup, responses, etc.
+	 * @param msg
+	 */
+	public void mysql_info(String msg)
+	{
+		//Uses the previously defined Logger instance to log on the INFO level.
+		log.info(prefix + mysql + msg);
+	}
 }
