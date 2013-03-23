@@ -1,0 +1,8 @@
+mysql:
+    enabled: false
+    username: root
+    password: password
+    dbname: database
+    address: localhost
+    prefix: db
+    port: 3306

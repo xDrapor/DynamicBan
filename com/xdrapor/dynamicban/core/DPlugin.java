@@ -1,5 +1,6 @@
 package com.xdrapor.dynamicban.core;
 
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -9,7 +10,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class DPlugin extends JavaPlugin
 {
 	/** The main logger instance **/
-	protected final DLogger log;
+	private static DLogger log;
+	
+	/** The DStorage instance **/
+	private static DStorage storageHandler;
 	
 	/**
 	 * Constructs a new DPlugin instance.
@@ -17,7 +21,10 @@ public class DPlugin extends JavaPlugin
 	 */
 	protected DPlugin()
 	{
-		log = new DLogger();
+		//Instantiate the DLogger object.
+		log 		   = new DLogger();
+		//Instantiate the DStorage object.
+		storageHandler = new DStorage();
 	}
 	
 	/**
@@ -27,7 +34,7 @@ public class DPlugin extends JavaPlugin
 	public void onEnable()
 	{
 		//Tells the user that the plugin is starting up.
-		log.info("Starting up...");
+		log.info("Started up.");
 	}
 	
 	/**
@@ -37,6 +44,36 @@ public class DPlugin extends JavaPlugin
 	public void onDisable()
 	{
 		//Tells the user that the plugin is shutting down.
-		log.info("Shutting down...");
+		log.info("Shut down.");
+	}
+	
+	/**
+	 * Registers an event to this plugin.
+	 * @param l
+	 */
+	public void registerEvent(Listener l)
+	{
+		//Register the listener to this plugin.
+		getServer().getPluginManager().registerEvents(l, this);
+	}
+	
+	/**
+	 * Returns the DLogger
+	 * @return DLogger
+	 */
+	public DLogger getLog()
+	{
+		//Return the DLogger instance.
+		return log;
+	}
+	
+	/**
+	 * Returns the DStorage
+	 * @return DLogger
+	 */
+	public DStorage getStorage()
+	{
+		//Returns the DStorage instance.
+		return storageHandler;
 	}
 }

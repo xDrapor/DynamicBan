@@ -12,6 +12,7 @@ public class DLogger
 	private static final Logger log = Logger.getLogger("Minecraft");
 	/** Default prefix of any logger messages **/
 	private static final String prefix = "[DynamicBan] ";
+	private static final String mysql = "[MySQL] ";
 	
 	/**
 	 * Logs a message on the INFO level.
@@ -66,5 +67,16 @@ public class DLogger
 	{
 		//Uses the previously defined Logger instance to log on the SEVERE level.
 		log.severe(prefix + msg);
+	}
+	
+	/**
+	 * Logs a message on the SEVERE level.
+	 * Use for handling errors.
+	 * @param msg
+	 */
+	public void mysql_severe(String msg)
+	{
+		//Uses the previously defined Logger instance to log on the SEVERE level.
+		log.severe(prefix + mysql + msg);
 	}
 }
